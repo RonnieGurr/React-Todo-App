@@ -1,4 +1,3 @@
-import { contains } from 'jquery';
 import React from 'react';
 import '../App.css'
 
@@ -51,16 +50,16 @@ class Todos extends React.Component {
                     Todos: newTodos
                 })
             } else {
-                console.log('Error')
+                console.log('Todo name or Todo info is empty')
             }
         }
     }
 
     removeTodo(event) {
-        var id = event.target.id;
+        var id = parseInt(event.target.id)
 
         for(var i = 0; i < this.state.Todos.length; i++) {
-            if(this.state.Todos[i].id == id) {
+            if(this.state.Todos[i].id === id) {
                 this.state.Todos.splice(i, 1)
                 let newTodos = this.state.Todos
                 this.saveTodos(newTodos)

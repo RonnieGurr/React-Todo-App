@@ -10,7 +10,7 @@ import 'bootstrap/dist/js/bootstrap';
 ReactDOM.render(
   <React.StrictMode>
     <nav className="navbar navbar-dark bg-dark">
-      <a className="navbar-brand" href="#">Todo App - React</a>
+      <a className="navbar-brand" href='http://localhost:3000/'>Todo App - React</a>
     </nav>
     <App />
   </React.StrictMode>,
