@@ -1,6 +1,9 @@
 import React from 'react';
 import '../App.css'
 
+const uniqid = require('uniqid');
+
+
 class Todos extends React.Component {
     constructor() {
         super()
@@ -12,6 +15,8 @@ class Todos extends React.Component {
         this.addTodo = this.addTodo.bind(this)
         this.saveTodos = this.saveTodos.bind(this)
         this.removeTodo = this.removeTodo.bind(this)
+        this.completeTodo = this.completeTodo.bind(this)
+        this.undoComplete = this.undoComplete.bind(this)
     }
 
     componentDidMount() {
@@ -43,8 +48,8 @@ class Todos extends React.Component {
             })
         } else {
             if (this.state.TodoName && this.state.TodoInfo) {
-                let uid = this.state.Todos.length + 1
-                let newTodos = [...this.state.Todos, {id: uid, name: this.state.TodoName, info: this.state.TodoInfo}]
+                let uid = uniqid()
+                let newTodos = [...this.state.Todos, {id: uid, name: this.state.TodoName, info: this.state.TodoInfo, done: false}]
                 this.saveTodos(newTodos)
                 this.setState({
                     Todos: newTodos
@@ -56,22 +61,45 @@ class Todos extends React.Component {
     }
 
     removeTodo(event) {
-        var id = parseInt(event.target.id)
+        let id = event.target.id
 
-        for(var i = 0; i < this.state.Todos.length; i++) {
-            if(this.state.Todos[i].id === id) {
-                this.state.Todos.splice(i, 1)
-                let newTodos = this.state.Todos
-                this.saveTodos(newTodos)
-                this.setState({
-                    Todos: newTodos
-                })
-            }
-        }
+        let newTodos = this.state.Todos.filter(todo => todo.id !== id)
+        this.saveTodos(newTodos)
+        this.setState({
+            Todos: newTodos
+        })
     }
     
-    completeTodo() {
-        //You stopped coding here btw
+    completeTodo(event) {
+        let id = event.target.id
+
+        let newTodos = this.state.Todos.map(todo => {
+         if (todo.id === id) {
+             todo.done = true
+         }
+         return todo
+        })
+        
+        this.saveTodos(newTodos)
+        this.setState({
+            Todos: newTodos
+        })
+        console.log(newTodos)
+    }
+
+    undoComplete(event) {
+        let id = event.target.id
+
+        let newTodos = this.state.Todos.map(todo => {
+            if (todo.id === id) {
+                todo.done = false
+            }
+            return todo
+        })
+        this.saveTodos(newTodos)
+        this.setState({
+            Todos: newTodos
+        })
     }
 
     render() {
@@ -104,12 +132,12 @@ class Todos extends React.Component {
                             this.state.Todos.map((todo) => {
                                 return (
                                     <div className='Todo' key={todo.id}>
-                                        <p>{todo.name}</p>
-                                        <p>{todo.info}</p>
+                                        <p style={todo.done ? {textDecoration: 'line-through'} : {color: 'black'}}>{todo.name}</p>
+                                        <p style={todo.done ? {textDecoration: 'line-through'} : {color: 'black'}}>{todo.info}</p>
                                         
                                         <div className='row'>
                                             <div className='col'>
-                                                <button type="button" className="btn btn-dark">Complete</button>
+                                                <button id={todo.id} onClick={todo.done ? this.undoComplete : this.completeTodo} type="button" className="btn btn-dark">{todo.done ? 'UN-Complete' : 'Complete'}</button>
                                             </div>
                                             <div className='col'>
                                                 <button id={todo.id} onClick={this.removeTodo} type="button" className="btn btn-danger">Delete</button>
