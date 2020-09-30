@@ -66,7 +66,6 @@ class Todos extends React.Component {
         }
         else if (event.target.id === 'TodoInfo') {
             let error = (/\S/.test(event.target.value))
-            console.log(error)
             this.setState({
                 TodoInfo: event.target.value,
                 TodoInfoError: error
@@ -116,7 +115,6 @@ class Todos extends React.Component {
     }
 
     render() {
-        console.log(this.state)
         if (this.state.loading) {
             return (
                 <div>
