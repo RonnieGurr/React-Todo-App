@@ -9,7 +9,11 @@ class Todos extends React.Component {
         super()
         this.state = {
             loading: true,
-            Todos: []
+            Todos: [],
+            TodoName: '',
+            TodoInfo: '',
+            TodoNameError: false,
+            TodoInfoError: false
         }
         this.saveName = 'TodoApp'
         this.addTodo = this.addTodo.bind(this)
@@ -17,6 +21,7 @@ class Todos extends React.Component {
         this.removeTodo = this.removeTodo.bind(this)
         this.completeTodo = this.completeTodo.bind(this)
         this.undoComplete = this.undoComplete.bind(this)
+        this.handleValidation = this.handleValidation.bind(this)
     }
 
     componentDidMount() {
@@ -36,27 +41,36 @@ class Todos extends React.Component {
         localStorage.setItem(this.saveName, JSON.stringify(todos))
     }
 
-    addTodo(event) {
+    addTodo() {
+        if (this.state.TodoNameError && this.state.TodoInfoError && this.state.TodoName.length > 0 && this.state.TodoInfo.length > 0) {
+        let uid = uniqid()
+        let newTodos = [...this.state.Todos, {id: uid, name: this.state.TodoName, info: this.state.TodoInfo, done: false}]
+        this.saveTodos(newTodos)
+        this.setState({
+            Todos: newTodos,
+            TodoName: '',
+            TodoInfo: '',
+            TodoNameError: false,
+            TodoInfoError: false
+        })
+        }
+    }
+
+    handleValidation(event) {
+        let error = (/\S/.test(event.target.value))
         if (event.target.id === 'TodoName') {
             this.setState({
-                TodoName: event.target.value
+                TodoName: event.target.value,
+                TodoNameError: error
             })
         }
         else if (event.target.id === 'TodoInfo') {
+            let error = (/\S/.test(event.target.value))
+            console.log(error)
             this.setState({
-                TodoInfo: event.target.value
+                TodoInfo: event.target.value,
+                TodoInfoError: error
             })
-        } else {
-            if (this.state.TodoName && this.state.TodoInfo) {
-                let uid = uniqid()
-                let newTodos = [...this.state.Todos, {id: uid, name: this.state.TodoName, info: this.state.TodoInfo, done: false}]
-                this.saveTodos(newTodos)
-                this.setState({
-                    Todos: newTodos
-                })
-            } else {
-                console.log('Todo name or Todo info is empty')
-            }
         }
     }
 
@@ -84,7 +98,6 @@ class Todos extends React.Component {
         this.setState({
             Todos: newTodos
         })
-        console.log(newTodos)
     }
 
     undoComplete(event) {
@@ -103,6 +116,7 @@ class Todos extends React.Component {
     }
 
     render() {
+        console.log(this.state)
         if (this.state.loading) {
             return (
                 <div>
@@ -117,10 +131,10 @@ class Todos extends React.Component {
 
                         <div className='row'>
                             <div className="col">
-                                <input onChange={this.addTodo} id="TodoName" type="text" className="form-control" placeholder="Todo Name" />
+                                <input style={this.state.TodoNameError ? {borderColor: 'limegreen'} : {borderColor: 'red'}} name={'TodoNameInput'} onChange={this.handleValidation} id="TodoName" type="text" className="form-control" placeholder="Todo Name" value={this.state.TodoName}/>
                             </div>
                             <div className="col">
-                                <input onChange={this.addTodo} id="TodoInfo" type="text" className="form-control" placeholder="Todo Notes" />
+                                <input style={this.state.TodoInfoError ? {borderColor: 'limegreen'} : {borderColor: 'red'}} name={'TodoInfoInput'} onChange={this.handleValidation} id="TodoInfo" type="text" className="form-control" placeholder="Todo Notes" value={this.state.TodoInfo}/>
                             </div>
                             <div className="col">
                                 <button onClick={this.addTodo} style={{width: '100%'}} type="button" className="btn btn-dark">Add Todo</button>
