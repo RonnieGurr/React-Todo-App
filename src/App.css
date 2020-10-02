@@ -20,3 +20,13 @@
 .Todo button {
   width: 100%;
 }
+.Footer {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.Footer .container {
+  width: 400px;
+}

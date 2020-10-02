@@ -1,5 +1,6 @@
 import React from 'react';
 import '../App.css'
+import axios from 'axios';
 
 const uniqid = require('uniqid');
 
@@ -25,12 +26,30 @@ class Todos extends React.Component {
     }
 
     componentDidMount() {
-        if (localStorage.getItem(this.saveName)) {
+        const self = this
+        if (localStorage.getItem('user')) {
+            let user = JSON.parse(localStorage.getItem('user'))
+            user = user.email
+            axios.post('http://localhost:3001/getTodos', {email: user})
+            .then(function (response) {
+                console.log(response.data)
+                self.setState({
+                    Todos: response.data,
+                    user: user,
+                    loading: false
+                })
+            })
+            .catch(function (error) {
+                console.log(error)
+            })
+        }
+        else if (localStorage.getItem(this.saveName)) {
             this.setState({
                 Todos: JSON.parse(localStorage.getItem(this.saveName)),
                 loading: false
             })
-        } else {
+        }
+        else {
             this.setState({
                 loading: false
             })
@@ -38,7 +57,22 @@ class Todos extends React.Component {
     }
 
     saveTodos(todos) {
-        localStorage.setItem(this.saveName, JSON.stringify(todos))
+        const self = this
+        if (this.state.user) {
+            axios.post('http://localhost:3001/saveTodos', {'todos': todos, 'user': this.state.user})
+            .then(function (response) {
+                self.setState({
+                    Todos: response.data
+                }, () => console.log(self.state.Todos))
+            })
+            .catch(function (error) {
+                // handle error
+                console.log(error);
+            })
+        } else {
+            localStorage.setItem(this.saveName, JSON.stringify(todos))
+        }
+
     }
 
     addTodo() {
@@ -76,11 +110,22 @@ class Todos extends React.Component {
     removeTodo(event) {
         let id = event.target.id
 
-        let newTodos = this.state.Todos.filter(todo => todo.id !== id)
-        this.saveTodos(newTodos)
-        this.setState({
-            Todos: newTodos
-        })
+        if (this.state.user) {
+            axios.post('http://localhost:3001/deleteTodos', {'id': id, 'user': this.state.user})
+            .then(function (response) {
+                console.log(response.data)
+            })
+            .catch(function (error) {
+                // handle error
+                console.log(error);
+            })
+        } else {
+            let newTodos = this.state.Todos.filter(todo => todo.id !== id)
+            this.saveTodos(newTodos)
+            this.setState({
+                Todos: newTodos
+            })
+        }
     }
     
     completeTodo(event) {
@@ -114,7 +159,8 @@ class Todos extends React.Component {
         })
     }
 
-    render() {
+    render() {  
+        console.log(this.state)
         if (this.state.loading) {
             return (
                 <div>
@@ -144,8 +190,8 @@ class Todos extends React.Component {
                             this.state.Todos.map((todo) => {
                                 return (
                                     <div className='Todo' key={todo.id}>
-                                        <p style={todo.done ? {textDecoration: 'line-through'} : {color: 'black'}}>{todo.name}</p>
-                                        <p style={todo.done ? {textDecoration: 'line-through'} : {color: 'black'}}>{todo.info}</p>
+                                        <p style={todo.done ? {textDecoration: 'line-through'} : {color: 'black'}}>{todo.TodoName}</p>
+                                        <p style={todo.done ? {textDecoration: 'line-through'} : {color: 'black'}}>{todo.TodoInfo}</p>
                                         
                                         <div className='row'>
                                             <div className='col'>
