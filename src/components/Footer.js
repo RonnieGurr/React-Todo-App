@@ -1,6 +1,5 @@
 import React from 'react';
 import axios from 'axios';
-import { data } from 'jquery';
 
 class Footer extends React.Component {
     constructor() {
@@ -94,10 +93,8 @@ class Footer extends React.Component {
                 } else {
                     let data = JSON.stringify(response.data)
                     localStorage.setItem('user', data)
-                    self.setState({
-                        user: response.data.email,
-                        register: false
-                    })
+                    window.location.href = window.location.pathname + window.location.search + window.location.hash;
+
                 }
             })
             .catch(function (error) {
@@ -115,24 +112,20 @@ class Footer extends React.Component {
     }
 
     register() {
-        const self = this
         if (this.state.registerEmailError && this.state.registerPasswordError && this.state.confirmPasswordError) {
             axios.post('http://localhost:3001/register', {email: this.state.registerEmail, password: this.state.confirmPassword})
-            .then(function (response) {
+            .then(response => {
                 // handle success
                 if (response.data.error === 'Email already exsist') {
-                    self.setState({
+                    this.setState({
                         registerEmailError: false
                     })
                 } else {
-                    let data = JSON.stringify(response.data)
-                    localStorage.setItem('user', data)
-                    self.setState({
-                        register: false
-                    })
+                    localStorage.setItem('user', JSON.stringify(response.data))
+                    window.location.reload(false)
                 }
             })
-            .catch(function (error) {
+            .catch(error => {
                 // handle error
                 console.log(error);
             })        } else {

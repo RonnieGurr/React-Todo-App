@@ -29,7 +29,6 @@ class Todos extends React.Component {
         if (localStorage.getItem('user')) {
             let user = JSON.parse(localStorage.getItem('user'))
             user = user.email
-            console.log(user)
 
             try {
                 const response = await axios.post('http://localhost:3001/getTodos', {email: user})
@@ -42,10 +41,7 @@ class Todos extends React.Component {
                 })
 
             } catch(err) {
-                this.setState({
-                    loading: true,
-                    Todos: []
-                })
+                console.log(err)
             }
         }
         else {
