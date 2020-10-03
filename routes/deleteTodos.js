@@ -5,13 +5,15 @@ const Todos = require('../models/Todos');
 const router = express.Router();
 
 router.post('/', (req, res) => {
-    console.log(req.body)
     if (req.body.id && req.body.user) {
         Todos.findOne({id: req.body.id, user: req.body.user} ,function(err, response) {
-            console.log(response)
             if (response) {
                 Todos.deleteOne({id: req.body.id, user: req.body.user}).then(data => {
-                    console.log('item deleted')
+                    Todos.find({id: req.body.id}, function(err, response) {
+                        if (response) {
+                            res.json(response)
+                        }
+                    })
                 }).catch(err => {
                     console.log('Error deleting item')
                 })
@@ -23,13 +25,6 @@ router.post('/', (req, res) => {
         console.log('Unable to delete')
     }
 
-    Todos.find({user: req.body.user}, function(err, response) {
-        if (response) {
-            res.json(response)
-        } else {
-            res.json([])
-        }
-    })
 })
 
 module.exports = router;
