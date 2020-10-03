@@ -2,7 +2,8 @@ const express = require('express');
 const app = express();
 const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser');
-const cors = require('cors')
+const cors = require('cors');
+const helmet = require('helmet');
 require('dotenv/config');
 
 const mongoose = require('mongoose');
@@ -11,7 +12,7 @@ mongoose.connect(process.env.DB_CONNECTION, {useNewUrlParser: true}, () => {
     console.log(mongoose.connection.readyState);
 })
 
-app.use(bodyParser.json(), cors({origin: 'http://localhost:3000'}))
+app.use(bodyParser.json(), cors({origin: 'https://localhost:3000'}))
 
 //Routes
 const loginRoute = require('./routes/login');
