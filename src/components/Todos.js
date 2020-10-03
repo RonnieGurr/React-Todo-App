@@ -1,6 +1,7 @@
 import React from 'react';
 import '../App.css'
 import axios from 'axios';
+import { json } from 'body-parser';
 
 const uniqid = require('uniqid');
 
@@ -25,29 +26,28 @@ class Todos extends React.Component {
         this.handleValidation = this.handleValidation.bind(this)
     }
 
-    componentDidMount() {
-        const self = this
+    async componentDidMount() {
         if (localStorage.getItem('user')) {
             let user = JSON.parse(localStorage.getItem('user'))
             user = user.email
-            axios.post('http://localhost:3001/getTodos', {email: user})
-            .then(function (response) {
-                console.log(response.data)
-                self.setState({
-                    Todos: response.data,
+            console.log(user)
+
+            try {
+                const response = await axios.post('http://localhost:3001/getTodos', {email: user})
+                const todoItems = response.data
+
+                this.setState({
                     user: user,
-                    loading: false
+                    Todos: todoItems,
+                    loading: false,
                 })
-            })
-            .catch(function (error) {
-                console.log(error)
-            })
-        }
-        else if (localStorage.getItem(this.saveName)) {
-            this.setState({
-                Todos: JSON.parse(localStorage.getItem(this.saveName)),
-                loading: false
-            })
+
+            } catch(err) {
+                this.setState({
+                    loading: true,
+                    Todos: []
+                })
+            }
         }
         else {
             this.setState({
@@ -57,35 +57,27 @@ class Todos extends React.Component {
     }
 
     saveTodos(todos) {
-        const self = this
-        if (this.state.user) {
-            axios.post('http://localhost:3001/saveTodos', {'todos': todos, 'user': this.state.user})
-            .then(function (response) {
-                self.setState({
-                    Todos: response.data
-                }, () => console.log(self.state.Todos))
+        axios.post('http://localhost:3001/saveTodos', {user: this.state.user, todos: todos})
+        .then(response => {
+            this.setState({
+                Todos: response.data.todos,
+                updateMessage: response.data.msg
             })
-            .catch(function (error) {
-                // handle error
-                console.log(error);
-            })
-        } else {
-            localStorage.setItem(this.saveName, JSON.stringify(todos))
-        }
-
+        }).catch(err => {
+            console.log(err)
+        }) 
     }
 
     addTodo() {
         if (this.state.TodoNameError && this.state.TodoInfoError && this.state.TodoName.length > 0 && this.state.TodoInfo.length > 0) {
         let uid = uniqid()
-        let newTodos = [...this.state.Todos, {id: uid, name: this.state.TodoName, info: this.state.TodoInfo, done: false}]
+        let newTodos = [...this.state.Todos, {id: uid, TodoName: this.state.TodoName, TodoInfo: this.state.TodoInfo, done: false}]
         this.saveTodos(newTodos)
         this.setState({
-            Todos: newTodos,
             TodoName: '',
             TodoInfo: '',
             TodoNameError: false,
-            TodoInfoError: false
+            TodoInfoError: false,
         })
         }
     }
@@ -110,22 +102,14 @@ class Todos extends React.Component {
     removeTodo(event) {
         let id = event.target.id
 
-        if (this.state.user) {
-            axios.post('http://localhost:3001/deleteTodos', {'id': id, 'user': this.state.user})
-            .then(function (response) {
-                console.log(response.data)
-            })
-            .catch(function (error) {
-                // handle error
-                console.log(error);
-            })
-        } else {
-            let newTodos = this.state.Todos.filter(todo => todo.id !== id)
-            this.saveTodos(newTodos)
+        axios.post('http://localhost:3001/deleteTodos', {id: id, user: this.state.user})
+        .then(response => {
             this.setState({
-                Todos: newTodos
+                Todos: response.data,
             })
-        }
+        }).catch(err => {
+            console.log(err)
+        }) 
     }
     
     completeTodo(event) {
@@ -139,9 +123,6 @@ class Todos extends React.Component {
         })
         
         this.saveTodos(newTodos)
-        this.setState({
-            Todos: newTodos
-        })
     }
 
     undoComplete(event) {
@@ -154,13 +135,9 @@ class Todos extends React.Component {
             return todo
         })
         this.saveTodos(newTodos)
-        this.setState({
-            Todos: newTodos
-        })
     }
 
     render() {  
-        console.log(this.state)
         if (this.state.loading) {
             return (
                 <div>
@@ -172,7 +149,7 @@ class Todos extends React.Component {
             return (
                 <div className='Todos'>
                     <div className='container'>
-
+                        {this.state.user &&
                         <div className='row'>
                             <div className="col">
                                 <input style={this.state.TodoNameError ? {borderColor: 'limegreen'} : {borderColor: 'red'}} name={'TodoNameInput'} onChange={this.handleValidation} id="TodoName" type="text" className="form-control" placeholder="Todo Name" value={this.state.TodoName}/>
@@ -184,7 +161,7 @@ class Todos extends React.Component {
                                 <button onClick={this.addTodo} style={{width: '100%'}} type="button" className="btn btn-dark">Add Todo</button>
                             </div>
                         </div>
-
+                        }
                         <div className='TodoList'>
                         {this.state.Todos &&
                             this.state.Todos.map((todo) => {
@@ -206,7 +183,7 @@ class Todos extends React.Component {
                                 )
                             })
                         }
-                        {this.state.Todos.length < 1 && 
+                        {this.state.user && this.state.Todos.length < 1 && 
                             <p>No Todos</p>
                         }
                         </div>
