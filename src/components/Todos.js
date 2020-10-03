@@ -1,7 +1,6 @@
 import React from 'react';
 import '../App.css'
 import axios from 'axios';
-import { json } from 'body-parser';
 
 const uniqid = require('uniqid');
 

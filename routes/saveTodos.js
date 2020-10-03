@@ -1,8 +1,5 @@
 const { query } = require('express');
-const e = require('express');
 const express = require('express');
-const { data } = require('jquery');
-const { unstable_renderSubtreeIntoContainer } = require('react-dom');
 const Todos = require('../models/Todos');
 
 const router = express.Router();
