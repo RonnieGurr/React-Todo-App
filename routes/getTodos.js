@@ -1,18 +1,18 @@
+const auth = require('./helpers/auth');
 const express = require('express');
-const { ReplSet } = require('mongodb');
 const Todos = require('../models/Todos');
 
 const router = express.Router();
 
-router.post('/', (req, res) => {
-    if (!req.body.email) {
+router.post('/', auth.authToken, (req, res) => {
+    if (!req.user) {
         res.json({error: 'No user supplied'})
     } else {
-        Todos.find({user: req.body.email}, function(err, response) {
+        Todos.find({user: req.user}, function(err, response) {
             if (response) {
                 res.json(response)
             } else {
-                res.json('0 Todos')
+                res.json([])
             }
         })
     }

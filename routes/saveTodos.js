@@ -1,17 +1,17 @@
-const { query } = require('express');
 const express = require('express');
 const Todos = require('../models/Todos');
+const auth = require('./helpers/auth');
 
 const router = express.Router();
 
-router.post('/', (req, res) => {
+router.post('/', auth.authToken, (req, res) => {
     let reply = {msg: '', todos: []}
-    if (req.body.user && req.body.todos) {
+    if (req.user && req.body.todos) {
     let todos = req.body.todos.map(data => {
-        Todos.findOne({id: data.id, user: req.body.user}, function(err, response) {
+        Todos.findOne({id: data.id, user: req.user}, function(err, response) {
             let todo = new Todos({
                 id: data.id,
-                user: req.body.user,
+                user: req.user,
                 TodoName: data.TodoName,
                 TodoInfo: data.TodoInfo,
                 done: data.done
@@ -19,16 +19,16 @@ router.post('/', (req, res) => {
 
             if (!response) {
                 todo.save().then(data => {
-                    reply.msg = 'todo saved'
+                    console.log('Item saved')
                 }).catch(err => {
-                    console.log('error')
+                    console.log('err')
                 })
             } else {
                 if (response.done !== todo.done) {
                     response.updateOne({ done: todo.done }).then(data => {
                         reply.msg = 'Todo Updated'
                     }).catch(err => {
-                        console.log(err)
+                        console.log('Errors')
                     })
                 } else {
                     console.log('no need to edit these ones')
@@ -37,11 +37,11 @@ router.post('/', (req, res) => {
 
         })
 
-        reply.todos.push(data)
         return data
 
     })
-
+    reply.todos = todos
+    console.log(reply.todos)
     res.json(reply)
 
     } else {
