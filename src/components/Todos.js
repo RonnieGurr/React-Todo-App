@@ -4,6 +4,17 @@ import axios from 'axios';
 
 const uniqid = require('uniqid');
 
+function validateEmail(email) {
+    const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
+}  
+
+function validatePassword(password) {
+    const pass = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{7,15}$/ //password must be between 7 to 15 characters which contain at least one numeric digit and a special character
+    if(password.match(pass)) return true
+    return false
+}
+
 
 class Todos extends React.Component {
     constructor() {
@@ -135,6 +146,7 @@ class Todos extends React.Component {
         }
         else if (event.target.name === 'email') {
             let error = (/\S/.test(event.target.value))
+            if (!validateEmail(event.target.value)) error = false
             this.setState({
                 email: event.target.value,
                 emailError: error
@@ -149,6 +161,10 @@ class Todos extends React.Component {
         }
         else if (event.target.name === 'registerEmail') {
             let error = (/\S/.test(event.target.value))
+            if (!validateEmail(event.target.value)) {
+                error = false
+                this.state.registerEmailErrMsg = false
+            }
             this.setState({
                 registerEmail: event.target.value,
                 registerEmailError: error
@@ -157,6 +173,7 @@ class Todos extends React.Component {
         else if (event.target.name === 'registerPassword') {
             let error = (/\S/.test(event.target.value))
             let confirmError = false
+            if (!validatePassword(event.target.value)) error = false
             if (this.state.confirmPassword) {
                 if (event.target.value === this.state.confirmPassword) confirmError = true
             }
@@ -253,7 +270,9 @@ class Todos extends React.Component {
                 // handle success
                 if (response.data.error === 'Email already exsist') {
                     this.setState({
-                        registerEmailError: false
+                        registerEmailError: false,
+                        registerEmailErrMsg: true,
+                        resetEmail: this.state.registerEmail
                     })
                 } else {
                     localStorage.setItem('user', JSON.stringify(response.data))
@@ -344,7 +363,9 @@ class Todos extends React.Component {
                         <div>
                         <p>Registration</p>
                         <input onChange={this.handleValidation} style={this.state.registerEmailError ? {borderColor: 'limegreen'} : {borderColor: 'red'}} name='registerEmail' type="email" className="form-control" placeholder='Email Address'/>
+                        <div name='invalid-feedback' style={this.state.registerEmailErrMsg ? {display: 'block', color: 'red', fontSize: '10px'} : {display: 'none'}}>This email already exsist, forgot your <a href={this.state.resetEmail ? this.state.resetEmail : ''}>password</a>?</div>
                         <input onChange={this.handleValidation} style={this.state.registerPasswordError ? {borderColor: 'limegreen'} : {borderColor: 'red'}} name='registerPassword' type="password" className="form-control" placeholder='Password'/>
+                        <div name='invalid-feedback' style={this.state.registerPasswordError ? {display: 'none'} : {display: "block", color: 'red', fontSize: '10px'}}>Password must be 7 characters in length and include aleast one number and one special characters.</div>
                         <input onChange={this.handleValidation} style={this.state.confirmPasswordError ? {borderColor: 'limegreen'} : {borderColor: 'red'}} name='confirmPassword' type="password" className="form-control" placeholder='Confirm Password'/>
                         <button onClick={this.register} type="button" className="btn btn-dark">Register</button>
                         </div>
